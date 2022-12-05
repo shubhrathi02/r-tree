@@ -32,13 +32,25 @@ int main()
 
     RTree rtree = RTree(4);
 
-    int pNumber = 1;
-    for(float i = 11.0f; i <= 18.0; i+=0.25) {
-        cout << (pNumber++) << ". ";
+    int pNumber = 0;
+    for(float i = 11.0f; i <= 50.0; i+=0.25) {
+        //if(pNumber == 100) break;
+        cout << (++pNumber) << ". ";
+        
         rtree.insertPoint(Point(i, i*2.0));
+        
+        //cout << endl << endl << endl << "**********Printing Root *******" << endl;
+        //rtree.printTree();
+        //cout << endl << endl << endl << "**********Root Printed *******" << endl;
+
+        if(!rtree.validateTree()) { cout << "Tree is not valid"; break; }
     }
 
     cout << endl << endl << endl << "**********Printing Root *******" << endl;
-    //rtree.printTree();
+    rtree.printTree();
+
+
+    
+    cout <<"Tree inserted: " << pNumber << " points.";
 
 }

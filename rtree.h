@@ -1,6 +1,7 @@
 #include <cmath>
 #include <algorithm>
 #include <cfloat>
+#include "assert.h"
 
 class RTree {
 
@@ -23,6 +24,25 @@ public:
         return (xMax - xMin) * (yMax - yMin);
     }
 
+    void combineRange(lRange *r1, Point* p) {
+        r1->x[0] = std::min(r1->x[0], p->x);
+        r1->x[1] = std::max(r1->x[1], p->x);
+        r1->y[0] = std::min(r1->y[0], p->y);
+        r1->y[1] = std::max(r1->y[1], p->y);
+
+        r1->area = (r1->x[1] - r1->x[0]) * (r1->y[1] - r1->y[0]);
+    }
+
+    void combineRange(lRange* r1, lRange* r2) {
+
+        r1->x[0] = std::min(r1->x[0], r2->x[0]);
+        r1->x[1] = std::max(r1->x[1], r2->x[1]);
+        r1->y[0] = std::min(r1->y[0], r2->y[0]);
+        r1->y[1] = std::max(r1->y[1], r2->y[1]);
+
+        r1->area = (r1->x[1] - r1->x[0]) * (r1->y[1] - r1->y[0]);
+    }
+
     void insertPoint(Point p) {
 
         cout << "Inserting point: " <<endl;
@@ -34,6 +54,7 @@ public:
         range.display();
 
        _insertRange(root, range, p);
+       cout << endl << "Insertion Complete" << endl;
     }
 
     lNode* _insertRange(lNode* node, lRange range, Point p) {
@@ -48,7 +69,10 @@ public:
             
         */
 
+       //combineRange(&node->mbr, &range);
+
         if(node->isLeaf) { // If it a leaf node
+            cout << endl << "it a leaf node" << endl;
             for(lRange& r: node->ranges) {
                 if(r.equals(range)) { // Range already exists at leaf node
                     r.insertPoint(p);
@@ -65,7 +89,7 @@ public:
             float minAreaChanges = FLT_MAX;
             float rangeArea;
             lRange* optimalRange;
-            for(lRange r: node->ranges) {
+            for(lRange& r: node->ranges) {
                 float areaChanges = calculateCombinedArea(&r, &range) - r.area;
                 if(areaChanges < minAreaChanges || (areaChanges == minAreaChanges && r.area < rangeArea)) {
                     minAreaChanges = areaChanges;
@@ -73,15 +97,35 @@ public:
                     rangeArea = r.area;
                 }
             }
+            combineRange(optimalRange, &range);
+            /*cout << "Debug*****: " <<endl;
+            optimalRange->display();
 
+            cout << "*****Debug: " <<endl;
+            */
             lNode* newNode = _insertRange(optimalRange->childLNode, range, p);
+
             if(newNode != NULL) {
-                lNode* updatedOptimalChildNode = optimalRange->childLNode;
+                cout <<endl << "Debug: new node is not null"<<endl;
+                /*lNode* updatedOptimalChildNode = optimalRange->childLNode;
                 optimalRange = &optimalRange->childLNode->mbr;
                 optimalRange->childLNode = updatedOptimalChildNode;
+                */
+                optimalRange->updateRange(&newNode->mbr);
+                optimalRange->childLNode = &newNode[0];
+                node->addChild(&newNode[1]);
 
-                node->addChild(newNode);
+                /*cout << "Debug*****: " <<endl;
+                optimalRange->display();
+
+                cout << "*****Debug: " <<endl;
+                */
             }
+            //combineRange(optimalRange, &range);
+            combineRange(&node->mbr, &range);
+            
+
+            
             
 
         }
@@ -90,19 +134,27 @@ public:
             
             cout << "It is overloaded at number of nodes: " << node-> size() << endl;
 
-            lNode* newLeafNodes = splitNode(node);
+            lNode* newNodes = splitNode(node);
 
             cout << "Nodes are split" << endl;
-            newLeafNodes[0].display();
-            newLeafNodes[1].display();
+            newNodes[0].display();
+            newNodes[1].display();
+
+            if(node->isLeaf == false) {
+                newNodes[0].isLeaf = false;
+                newNodes[1].isLeaf = false;
+            }
+
             if(node == root) {
+                cout << endl << "Split at root" << endl;
                 root = new lNode;
                 root->isLeaf = false;
-                root->addChild(&newLeafNodes[0]);
-                root->addChild(&newLeafNodes[1]);
+                root->addChild(&newNodes[0]);
+                root->addChild(&newNodes[1]);
             } else {
-                node = &newLeafNodes[0];
-                return &newLeafNodes[1];
+                cout << endl << "Split at internal node" << endl;
+                //node = &newLeafNodes[0];
+                return newNodes;
             }
         }
         return NULL;
@@ -130,7 +182,7 @@ public:
             } else {
                 lRange nextRange = pickNext(node, seeds);
                 
-                //cout << "Next Range picked: " << endl;
+                cout << "Next Range picked: " << endl;
                 nextRange.display();
                 
                 addToGroup(&seeds[0], &seeds[1], &nextRange);
@@ -250,4 +302,64 @@ public:
         root->display();
     }
 
+    bool validateTree() {
+        //assert(1 == 0);
+
+        assert(validateLNode(root) == true);
+        return true;
+    }
+
+    bool validateLNode(lNode* node) {
+        lRange combinedRange = node->ranges[0];
+        for(lRange r: node->ranges) {
+            assert(validateRange(&r) == true);
+            
+            combineRange(&combinedRange, &r);
+        }
+        //assert(combinedRange.equals(node->mbr));
+        if(!combinedRange.equals(node->mbr)) {
+            cout << endl << "Assertion failed at: " << endl;
+                
+            node->display();
+            //node->mbr.display();
+            return false;
+        }
+
+        return true;
+    }
+
+    bool validateRange(lRange* r) {
+        
+        if(r->childLNode == nullptr) { // leafnode
+            if(r->points.size() == 0) return false;
+
+            lRange combinedRange = lRange((float[]) {r->points[0].x, r->points[0].x}, (float[]) {r->points[0].y, r->points[0].y});
+            for(Point p: r->points) {
+                combineRange(&combinedRange, &p);
+            }
+
+            assert(isContained(r, &combinedRange) == true);
+
+        } else {
+            if(r->points.size() > 0) return false;
+
+            assert(isContained(r, &r->childLNode->mbr) == true);
+            /*if (!isContained(r, &r->childLNode->mbr)) {
+                cout << endl << "Assertion failed at: " << endl;
+                r->display();
+                cout << endl;
+                return false;
+            }*/
+
+            return validateLNode(r->childLNode);
+
+        }
+
+        return true;
+    }
+
+    bool isContained(lRange *lr, lRange* sr) {
+        if(lr->x[0] <= sr->x[0] && lr-> y[0] <= sr->y[0] && lr->x[1] >= sr->x[1] && lr->y[1] >= sr->y[1]) return true;
+        else return false;
+    }
 };

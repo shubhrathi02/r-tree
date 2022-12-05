@@ -58,10 +58,12 @@ public:
 
 class lRange : public iRange {
 
-private:
-    vector<Point> points;
+//private:
+   
 
 public:
+    
+    vector<Point> points;
     lNode* childLNode = nullptr;
 
     
@@ -70,7 +72,27 @@ public:
 
     void insertPoint(Point p) {
         points.push_back(p);
+
+        combineRange(&p);
+        
         //sz += 1;
+    }
+
+    void updateRange(lRange* lr) {
+        x[0] = lr->x[0];
+        y[0] = lr->y[0];
+        x[1] = lr->x[1];
+        y[1] = lr->y[1];
+        area = (x[1] - x[0]) * (y[1] - y[0]);
+    }
+
+    void combineRange(Point* p) {
+        x[0] = std::min(x[0], p->x);
+        x[1] = std::max(x[1], p->x);
+        y[0] = std::min(y[0], p->y);
+        y[1] = std::max(y[1], p->y);
+
+        area = (x[1] - x[0]) * (y[1] - y[0]);
     }
 
     void display();
@@ -97,7 +119,7 @@ public:
 
     vector<lRange> ranges;
 
-    lRange mbr = lRange((float[]){0.0, 0.0}, (float[]){0.0, 0.0});;
+    lRange mbr = lRange((float[]){0.0, 0.0}, (float[]){0.0, 0.0});
 
     long size() { return ranges.size(); }
     lNode(int m = 4) { } //ranges.reserve(m); }
@@ -118,9 +140,10 @@ public:
     }
 
     void display() {
-        cout << "Node Range: "; mbr.display();
+        cout << "LNode Range: "; mbr.display();
         cout <<"Total range intervals in the node: " << ranges.size() << endl;
         for(lRange r: ranges) {
+            cout << endl << "Next LRange: " << endl;
             r.display();
         }
     }
