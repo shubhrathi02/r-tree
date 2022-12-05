@@ -54,6 +54,7 @@ public:
     void display() {
         cout << "x[0] : " << x[0] << " x[1]: " << x[1] << " y[0]: " << y[0] << " y[1]: " << y[1] << endl;
     }
+    
 };
 
 class lRange : public iRange {
@@ -98,6 +99,11 @@ public:
     void display();
 
     long size() { return points.size(); }
+
+    void displayRange() {
+        cout <<"Displaying only Range of LRange: " << endl;
+        iRange::display();
+    }
     
 };
 
@@ -146,6 +152,11 @@ public:
             cout << endl << "Next LRange: " << endl;
             r.display();
         }
+    }
+
+    void displayRange() {
+        cout << "Displaying Only LNode Range of MBR: " << endl;
+        mbr.displayRange();
     }
 };
 

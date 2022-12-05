@@ -33,21 +33,30 @@ int main()
     RTree rtree = RTree(4);
 
     int pNumber = 0;
-    for(float i = 11.0f; i <= 50.0; i+=0.25) {
+    srand(42);
+    for(float i = 11.0f; i <= 2000.0; i+=0.25) {
         //if(pNumber == 100) break;
         cout << (++pNumber) << ". ";
         
-        rtree.insertPoint(Point(i, i*2.0));
+        /*if(pNumber == 39) {
+            cout << endl << endl << endl << "**********Printing Root (Before) *******" << endl;
+            rtree.printTree();
+            cout << endl << endl << endl << "**********Root Printed (Before) *******" << endl;
+        }*/
+
+        rtree.insertPoint(Point((rand()%100000)/1000.0f, (rand()%100000)/1000.0f));
         
-        //cout << endl << endl << endl << "**********Printing Root *******" << endl;
-        //rtree.printTree();
-        //cout << endl << endl << endl << "**********Root Printed *******" << endl;
+        /*if(pNumber == 39) {
+            cout << endl << endl << endl << "**********Printing Root (After) *******" << endl;
+            rtree.printTree();
+            cout << endl << endl << endl << "**********Root Printed (After) *******" << endl;
+        }*/
 
         if(!rtree.validateTree()) { cout << "Tree is not valid"; break; }
     }
 
     cout << endl << endl << endl << "**********Printing Root *******" << endl;
-    rtree.printTree();
+    //rtree.printTree();
 
 
     

@@ -72,7 +72,7 @@ public:
        //combineRange(&node->mbr, &range);
 
         if(node->isLeaf) { // If it a leaf node
-            cout << endl << "it a leaf node" << endl;
+            //cout << endl << "it a leaf node" << endl;
             for(lRange& r: node->ranges) {
                 if(r.equals(range)) { // Range already exists at leaf node
                     r.insertPoint(p);
@@ -85,7 +85,7 @@ public:
 
             
         } else { // It is an internal node
-            cout << "It is an internal node" << endl;
+            //cout << "It is an internal node" << endl;
             float minAreaChanges = FLT_MAX;
             float rangeArea;
             lRange* optimalRange;
@@ -106,7 +106,7 @@ public:
             lNode* newNode = _insertRange(optimalRange->childLNode, range, p);
 
             if(newNode != NULL) {
-                cout <<endl << "Debug: new node is not null"<<endl;
+                //cout <<endl << "Debug: new node is not null"<<endl;
                 /*lNode* updatedOptimalChildNode = optimalRange->childLNode;
                 optimalRange = &optimalRange->childLNode->mbr;
                 optimalRange->childLNode = updatedOptimalChildNode;
@@ -132,13 +132,16 @@ public:
         if(node->size() > max) { // Inserting the range has exceeded the maximum capacity at node. // Common for both leaf and internal nodes.
         
             
-            cout << "It is overloaded at number of nodes: " << node-> size() << endl;
+            //cout << "It is overloaded at number of nodes: " << node-> size() << endl;
+            //cout << "Nodes will be split for range: " << endl;
+
+            //node->displayRange();
 
             lNode* newNodes = splitNode(node);
 
-            cout << "Nodes are split" << endl;
-            newNodes[0].display();
-            newNodes[1].display();
+            //cout << "Nodes are split" << endl;
+            //newNodes[0].display();
+            //newNodes[1].display();
 
             if(node->isLeaf == false) {
                 newNodes[0].isLeaf = false;
@@ -146,13 +149,13 @@ public:
             }
 
             if(node == root) {
-                cout << endl << "Split at root" << endl;
+                //cout << endl << "Split at root" << endl;
                 root = new lNode;
                 root->isLeaf = false;
                 root->addChild(&newNodes[0]);
                 root->addChild(&newNodes[1]);
             } else {
-                cout << endl << "Split at internal node" << endl;
+                //cout << endl << "Split at internal node" << endl;
                 //node = &newLeafNodes[0];
                 return newNodes;
             }
@@ -162,28 +165,31 @@ public:
 
     lNode* splitNode(lNode* node) {
         //cout << endl << "Inside Split nodes" << endl;
+
+        //node->display();
+
         lNode* seeds = pickSeeds(node);
 
-        cout << endl << "Seeds picked: " << endl;
-        cout << "Seed 1: " << endl;
-        seeds[0].display();
+        //cout << endl << "Seeds picked: " << endl;
+        //cout << "Seed 1: " << endl;
+        //seeds[0].display();
 
-        cout << "Seed 2: " << endl;
-        seeds[1].display();
+        //cout << "Seed 2: " << endl;
+        //seeds[1].display();
 
-        vector<lRange> ranges = node->ranges;
+        //vector<lRange> ranges = node->ranges;
         for(int i = node->size(); i > 0; i--) {
             if(seeds[0].size() + i  <= min) {
                 //cout << "Taking min: " << " seeds0 size: " << seeds[0].size();
-                seeds[0].insertRange(ranges[i-1]);
+                seeds[0].insertRange(node->ranges[i-1]);
             } else if(seeds[1].size() + i  <= min) {
                 //cout << "Taking min: " << " seeds1 size: " << seeds[1].size();
-                seeds[1].insertRange(ranges[i-1]);
+                seeds[1].insertRange(node->ranges[i-1]);
             } else {
                 lRange nextRange = pickNext(node, seeds);
                 
-                cout << "Next Range picked: " << endl;
-                nextRange.display();
+                //cout << "Next Range picked: " << endl;
+                //nextRange.display();
                 
                 addToGroup(&seeds[0], &seeds[1], &nextRange);
             }
@@ -316,14 +322,17 @@ public:
             
             combineRange(&combinedRange, &r);
         }
-        //assert(combinedRange.equals(node->mbr));
-        if(!combinedRange.equals(node->mbr)) {
-            cout << endl << "Assertion failed at: " << endl;
+        assert(combinedRange.equals(node->mbr));
+        /*if(!combinedRange.equals(node->mbr)) {
+            cout << endl << "Assertion failed at(validateLNode): " << endl;
+            cout << "Combined Range: " << endl ;
+            combinedRange.display();
+            cout <<endl << "Combined Range done " << endl ;
                 
             node->display();
             //node->mbr.display();
             return false;
-        }
+        }*/
 
         return true;
     }
@@ -345,7 +354,7 @@ public:
 
             assert(isContained(r, &r->childLNode->mbr) == true);
             /*if (!isContained(r, &r->childLNode->mbr)) {
-                cout << endl << "Assertion failed at: " << endl;
+                cout << endl << "Assertion failed at(validateRange): " << endl;
                 r->display();
                 cout << endl;
                 return false;
